@@ -93,7 +93,7 @@ Function | Key | Value | Description
 ### Layer
 
 Layer is a component that does actual computation while managing internal trainable parameters.
-Currently, input layer and fully connected layer type are supported:
+This is how to create and add layer to the model.
 
 ```c
 // Create layer
@@ -108,67 +108,194 @@ ml_train_set_property(layer, "unit=10", "activation=softmax", "bias_initializer=
 ml_train_model_add_layer(model, layer);
 ```
 
-Following are the available properties for each layer type:
+There are 2 types of layers.
+One type includes commonly trainable weigths and another type does not includes.
+The following are the available properties for each layer type which include commonly trainable weights.
 
-Type | Key | value | Description
----------- | --- | ----- | -----------
-(Universal properties)      |                    |               | Universal properties that apply to every layer
-&#xfeff;                    | name               | (string)      | An identifier for each layer
-&#xfeff;                    | input_shape        | (string)      | Formatted string as "channel:height:width". If there is no channel then it must be 1. First layer of the model must have input_shape. Other can be omitted as it is calculated at compile phase.
-&#xfeff;                    | activation         | (categorical) | Activation type
-&#xfeff;                    |                    | tanh          | hyperbolic tangent
-&#xfeff;                    |                    | sigmoid       | sigmoid function
-&#xfeff;                    |                    | relu          | relu function
-&#xfeff;                    |                    | softmax       | softmax function
-&#xfeff;                    | weight_initializer | (categorical) | Weight initializer
-&#xfeff;                    |                    | zeros         | Zero initialization
-&#xfeff;                    |                    | lecun_normal  | LeCun Normal Initialization
-&#xfeff;                    |                    | lecun_uniform | LeCun Uniform Initialization
-&#xfeff;                    |                    | xavier_normal | Xavier Normal Initialization
-&#xfeff;                    |                    | xavier_uniform| Xavier Uniform Initialization
-&#xfeff;                    |                    | he_normal     | He Normal Initialization
-&#xfeff;                    |                    | he_uniform    | He Uniform Initialization
-&#xfeff;                    | bias_initializer   | (categorical) | Bias initializer, same category as `weight_initializer`
-&#xfeff;                    | weight_regularizer | (categorical) | Weight regularizer, only l2norm is supported
-&#xfeff;                    |                    | l2norm        | L2 weight regularizer
-&#xfeff;                    | weight_regularizer_constant | (float)| weight regularizer constant
-&#xfeff;                    | flatten            | (boolean)     | flatten shape from `c:h:w` to `1:1:c*h*w`
-`ML_TRAIN_LAYER_TYPE_INPUT` |                    |               | Input layer
-&#xfeff;                    | normalization      | (boolean)     | normalize input if true
-&#xfeff;                    | standardization    | (boolean)     | standardize input if true
-`ML_TRAIN_LAYER_TYPE_FC`    |                    |               | Fully connected layer
-&#xfeff;                    | unit               | (integer)     | number of outputs
+Type | Key | Value | Default value | Description
+---------- | --- | ----- | ----------- | -----------
+(Universal properties)                                       |                             |                             |                         | Universal properties that applies to every layer
+&#xfeff;                                                     | name                        | (string)                    |                         | An identifier for each layer
+&#xfeff;                                                     | trainable                   | (boolean)                   | true                    | Allow weights to be trained if true
+&#xfeff;                                                     | input_layers                | (string)                    |                         | Comma-seperated names of layers to be inputs of the current layer
+&#xfeff;                                                     | input_shape                 | (string)                    |                         | Comma-seperated Formatted string as "channel:height:width". If there is no channel then it must be 1. First layer of the model must have input_shape. Other can be omitted as it is calculated at compile phase.
+&#xfeff;                                                     | flatten                     | (boolean)                   |                         | Flatten shape from `c:h:w` to `1:1:c*h*w`
+&#xfeff;                                                     | activation                  | (categorical)               |                         | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | loss                        | (float)                     | 0                       | Loss
+&#xfeff;                                                     | weight_initializer          | (categorical)               | xavier_uniform          | Weight initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | bias_initializer            | (categorical)               | zeros                   | Bias initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | weight_regularizer          | (categorical)               |                         | Weight regularizer. Currently, only l2norm is supported
+&#xfeff;                                                     |                             | l2norm                      |                         | L2 weight regularizer
+&#xfeff;                                                     | weight_regularizer_constant | (float)                     | 1                       | Weight regularizer constant
+`ML_TRAIN_LAYER_TYPE_FC`                                     |                             |                             |                         | Fully connected layer
+&#xfeff;                                                     | unit                        | (unsigned integer)          |                         | Number of outputs
+`ML_TRAIN_LAYER_TYPE_CONV2D` (since 6.5)                     |                             |                             |                         | 2D Convolution layer
+&#xfeff;                                                     | filters                     | (unsigned integer)          |                         | Number of filters
+&#xfeff;                                                     | kernel_size                 | (array of unsigned integer) |                         | Comma-seperated unsigned integers for kernel size, `height, width`  respectively
+&#xfeff;                                                     | stride                      | (array of unsigned integer) | 1, 1                    | Comma-seperated unsigned integers for strides, `height, width`  respectively
+&#xfeff;                                                     | padding                     | (categorical)               | valid                   | Padding type
+&#xfeff;                                                     |                             | valid                       |                         | No padding
+&#xfeff;                                                     |                             | same                        |                         | Preserve height/width dimension
+&#xfeff;                                                     |                             | (unsigned integer)          |                         | Size of padding applied uniformly to all side
+&#xfeff;                                                     |                             | (array of unsigned integer of size 2) |                         | Padding for height, width
+&#xfeff;                                                     |                             | (array of unsigned integer of size 4) |                         | Padding for top, bottom, left, right
+`ML_TRAIN_LAYER_TYPE_EMBEDDING` (since 6.5)                  |                             |                             |                         | Embedding layer
+&#xfeff;                                                     | in_dim                      | (unsigned integer)          |                         | Vocabulary size
+&#xfeff;                                                     | out_dim                     | (unsigned integer)          |                         | Word embeddeing size
+`ML_TRAIN_LAYER_TYPE_RNN` (since 6.5)                        |                             |                             |                         | RNN layer
+&#xfeff;                                                     | unit                        | (unsigned integer)          |                         | Number of output neurons
+&#xfeff;                                                     | hidden_state_activation     | (categorical)               | tanh                    | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | return_sequences            | (boolean)                   | false                   | Return only the last output if true, else return full output
+&#xfeff;                                                     | dropout                     | (float)                     | 0                       | Dropout rate
+`ML_TRAIN_LAYER_TYPE_LSTM` (since 6.5)                       |                             |                             |                         | LSTM layer
+&#xfeff;                                                     | unit                        | (unsigned integer)          |                         | Number of output neurons
+&#xfeff;                                                     | hidden_state_activation     | (categorical)               | tanh                    | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | recurrent_activation        | (categorical)               | sigmoid                 | Activation type for recurrent step
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | return_sequences            | (boolean)                   | false                   | Return only the last output if true, else return full output
+&#xfeff;                                                     | dropout                     | (float)                     | 0                       | Dropout rate
+`ML_TRAIN_LAYER_TYPE_GRU` (since 6.5)                        |                             |                             |                         | GRU layer
+&#xfeff;                                                     | unit                        | (unsigned integer)          |                         | Number of output neurons
+&#xfeff;                                                     | hidden_state_activation     | (categorical)               | tanh                    | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | recurrent_activation        | (categorical)               | sigmoid                 | Activation type for recurrent step
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | return_sequences            | (boolean)                   | false                   | Return only the last output if true, else return full output
+&#xfeff;                                                     | dropout                     | (float)                     | 0                       | Dropout rate
 
-Since Tizen 6.5 and higher, each layer type has the following available properties:
+The following are the available properties for each layer type which doesn't include (weight_initializer, bias_initializer, weight_regularizer, weight_regularizer_constant) properties.
 
-| Type                             | Key                         | value                | Description                                                           |
-| -------------------------------- | --------------------------- | -------------------- | --------------------------------------------------------------------- |
-| (Universal properties)           |                             |                      | Universal properties that apply to every layer                      |
-| &#xfeff;                         | input_layers                | (string array)       | comma-separated layer names that serve as the input to the current layer  |
-| `ML_TRAIN_LAYER_TYPE_BN`         |                             |                      | Batch normalization layer                                             |
-| &#xfeff;                         | epsilon                     | (float)              | epsilon to be added, for example, `1.0e-6`                            |
-| &#xfeff;                         | moving_mean_initializer     | (weight_initializer) | moving mean initializer                                               |
-| &#xfeff;                         | moving_variance_initializer | (weight_initializer) | moving variance initializer                                           |
-| &#xfeff;                         | beta_initializer            | (weight_initializer) | beta initializer                                                      |
-| &#xfeff;                         | gamma_initializer           | (weight_initializer) | gamma initializer                                                     |
-| &#xfeff;                         | momentum                    | (float)              | momentum                                                              |
-| `ML_TRAIN_LAYER_TYPE_CONV2D`     |                             |                      | 2D convolution layer                                                  |
-| &#xfeff;                         | filters                     | (integer)            | number of filters                                                     |
-| &#xfeff;                         | kernel_size                 | (integer array)      | comma-separated integers for kernel size,  `height, width` respectively |
-| &#xfeff;                         | stride                      | (integer array)      | comma-separated integers for strides, `height, width` respectively    |
-| &#xfeff;                         | padding                     | (integer array)      | comma-separated integers for padding, `height, width` respectively    |
-| `ML_TRAIN_LAYER_TYPE_POOLING2D`  |                             |                      | 2D pooling layer                                                      |
-| &#xfeff;                         | pooling                     | (categorical)        | type of pooling                                                       |
-| &#xfeff;                         |                             | max                  | max pooling                                                           |
-| &#xfeff;                         |                             | average              | average pooling                                                       |
-| &#xfeff;                         |                             | global_max           | global max pooling                                                    |
-| &#xfeff;                         |                             | global_average       | global average pooling                                                |
-| `ML_TRAIN_LAYER_TYPE_FLATTEN`    |                             |                      | Flatten layer                                                         |
-| `ML_TRAIN_LAYER_TYPE_ACTIVATION` |                             |                      | Standalone, simple activation layer                                   |
-| `ML_TRAIN_LAYER_TYPE_ADDITION`   |                             |                      | Addition layer                                                        |
-| `ML_TRAIN_LAYER_TYPE_CONCAT`     |                             |                      | Concatenation layer                                                   |
-| `ML_TRAIN_LAYER_TYPE_MULTIOUT`   |                             |                      | Multiout layer, repeats output to the number of layers                 |
-
+Type | Key | Value | Default value | Description
+---------- | --- | ----- | ----------- | -----------
+(Universal properties)                                       |                             |                             |                         | Universal properties that applies to every layer
+&#xfeff;                                                     | name                        | (string)                    |                         | An identifier for each layer
+&#xfeff;                                                     | trainable                   | (boolean)                   | true                    | Allow weights to be trained if true
+&#xfeff;                                                     | input_layers                | (string)                    |                         | Comma-seperated names of layers to be inputs of the current layer
+&#xfeff;                                                     | input_shape                 | (string)                    |                         | Comma-seperated Formatted string as "channel:height:width". If there is no channel then it must be 1. First layer of the model must have input_shape. Other can be omitted as it is calculated at compile phase.
+&#xfeff;                                                     | flatten                     | (boolean)                   |                         | Flatten shape from `c:h:w` to `1:1:c*h*w`
+&#xfeff;                                                     | activation                  | (categorical)               |                         | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+&#xfeff;                                                     | loss                        | (float)                     | 0                       | Loss
+`ML_TRAIN_LAYER_TYPE_INPUT`                                  |                             |                             |                         | Input layer
+&#xfeff;                                                     | normalization               | (boolean)                   | false                   | Normalize input if true
+&#xfeff;                                                     | standardization             | (boolean)                   | false                   | Standardize input if true
+`ML_TRAIN_LAYER_TYPE_BN` (since 6.5)                         |                             |                             |                         | Batch normalization layer
+&#xfeff;                                                     | epsilon                     | (float)                     | 0.001                   | Small value to avoid divide by zero
+&#xfeff;                                                     | moving_mean_initializer     | (categorical)               | zeros                   | Moving mean initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | moving_variance_initializer | (categorical)               | ones                    | Moving variance initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | gamma_initializer           | (categorical)               | ones                    | Gamma initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | beta_initializer            | (categorical)               | zeros                   | Beta initializer
+&#xfeff;                                                     |                             | zeros                       |                         | Zero initialization
+&#xfeff;                                                     |                             | lecun_normal                |                         | LeCun normal initialization
+&#xfeff;                                                     |                             | lecun_uniform               |                         | LeCun uniform initialization
+&#xfeff;                                                     |                             | xavier_normal               |                         | Xavier normal initialization
+&#xfeff;                                                     |                             | xavier_uniform              |                         | Xavier uniform initialization
+&#xfeff;                                                     |                             | he_normal                   |                         | He normal initialization
+&#xfeff;                                                     |                             | he_uniform                  |                         | He uniform initialization
+&#xfeff;                                                     | momentum                    | (float)                     | 0.99                    | Momentum for moving average in batch normalization
+`ML_TRAIN_LAYER_TYPE_POOLING2D` (since 6.5)                  |                             |                             |                         | Pooling layer
+&#xfeff;                                                     | pooling                     | (categorical)               |                         | Pooling type
+&#xfeff;                                                     |                             | max                         |                         | Max pooling
+&#xfeff;                                                     |                             | average                     |                         | Average pooling
+&#xfeff;                                                     |                             | global_max                  |                         | Global max pooling
+&#xfeff;                                                     |                             | global_average              |                         | Global average pooling
+&#xfeff;                                                     | pool_size                   | (array of unsigned integer) |                         | Comma-seperated unsigned intergers for pooling size, `height, width`  respectively
+&#xfeff;                                                     | stride                      | (array of unsigned integer) | 1, 1                    | Comma-seperated unsigned intergers for stride, `height, width`  respectively
+&#xfeff;                                                     | padding                     | (categorical)               | valid                   | Padding type
+&#xfeff;                                                     |                             | valid                       |                         | No padding
+&#xfeff;                                                     |                             | same                        |                         | Preserve height/width dimension
+&#xfeff;                                                     |                             | (unsigned integer)          |                         | Size of padding applied uniformly to all side
+&#xfeff;                                                     |                             | (array of unsigned integer of size 2) |                         | Padding for height, width
+&#xfeff;                                                     |                             | (array of unsigned integer of size 4) |                         | Padding for top, bottom, left, right
+`ML_TRAIN_LAYER_TYPE_FLATTEN` (since 6.5)                    |                             |                             |                         | Flatten layer
+`ML_TRAIN_LAYER_TYPE_ACTIVATION` (since 6.5)                 |                             |                             |                         | Activation layer
+&#xfeff;                                                     | activation                  | (categorical)               |                         | Activation type
+&#xfeff;                                                     |                             | tanh                        |                         | Hyperbolic tangent
+&#xfeff;                                                     |                             | sigmoid                     |                         | Sigmoid function
+&#xfeff;                                                     |                             | relu                        |                         | Relu function
+&#xfeff;                                                     |                             | softmax                     |                         | Softmax function
+`ML_TRAIN_LAYER_TYPE_ADDITION` (since 6.5)                   |                             |                             |                         | Addition layer
+`ML_TRAIN_LAYER_TYPE_CONCAT` (since 6.5)                     |                             |                             |                         | Concat layer
+`ML_TRAIN_LAYER_TYPE_MULTIOUT` (since 6.5)                   |                             |                             |                         | Multiout layer
+`ML_TRAIN_LAYER_TYPE_SPLIT` (since 6.5)                      |                             |                             |                         | Split layer
+&#xfeff;                                                     | split_dimension             | (unsigned integer)          |                         | Which dimension to split. Split batch dimension is not allowed
+`ML_TRAIN_LAYER_TYPE_PERMUTE` (since 6.5)                    |                             |                             |                         | Permute layer
+`ML_TRAIN_LAYER_TYPE_DROPOUT` (since 6.5)                    |                             |                             |                         | Dropout layer
+&#xfeff;                                                     | dropout                     | (float)                     | 0                       | Dropout rate
+`ML_TRAIN_LAYER_TYPE_BACKBONE_NNSTREAMER` (since 6.5)        |                             |                             |                         | NNStreamer layer
+&#xfeff;                                                     | model_path                  | (string)                    |                         | NNStreamer model path
+`ML_TRAIN_LAYER_TYPE_CENTROID_KNN` (since 6.5)               |                             |                             |                         | Centroid KNN layer
+&#xfeff;                                                     | num_class                   | (unsigned integer)          |                         | Number of class
+`ML_TRAIN_LAYER_TYPE_PREPROCESS_FLIP` (since 6.5)            |                             |                             |                         | Preprocess flip layer
+&#xfeff;                                                     | flip_direction              | (categorical)               |                         | Flip direction
+&#xfeff;                                                     |                             | horizontal                  |                         | Horizontal direction
+&#xfeff;                                                     |                             | vertical                    |                         | Vertiacl direction
+&#xfeff;                                                     |                             | horizontal_and_vertical     | horizontal_and_vertical | Horizontal_and vertical direction
+`ML_TRAIN_LAYER_TYPE_PREPROCESS_TRANSLATE` (since 6.5)       |                             |                             |                         | Preprocess translate layer
+&#xfeff;                                                     | random_translate            | (float)                     |                         | Translate factor value
+`ML_TRAIN_LAYER_TYPE_PREPROCESS_L2NORM` (since 6.5)          |                             |                             |                         | Preprocess l2norm layer
+`ML_TRAIN_LAYER_TYPE_LOSS_MSE` (since 6.5)                   |                             |                             |                         | MSE loss layer
+`ML_TRAIN_LAYER_TYPE_LOSS_CROSS_ENTROPY_SIGMOID` (since 6.5) |                             |                             |                         | Cross entropy with sigmoid loss layer
+`ML_TRAIN_LAYER_TYPE_LOSS_CROSS_ENTROPY_SOFTMAX` (since 6.5) |                             |                             |                         | Cross entropy with softmax loss layer
 
 ### Optimizer
 
@@ -244,9 +371,14 @@ Following is an example of the `*.ini` file:
 ```ini
 [Model] # Special section that describes model itself
 Type = NeuralNetwork  # Model type : only NeuralNetwork is supported as of now
-Optimizer = adam  # Optimizer : Adaptive Moment Estimation(adam)
+batch_size = 9
 
-#### optimizer related properties
+####  Model run related properties
+Epochs = 20     # Epochs
+save_path = "model.bin"   # model path to save and read parameters
+
+[Optimizer]
+Type = adam  # Optimizer : Adaptive Moment Estimation(adam)
 Learning_rate = 0.0001  # Learning rate for the optimizer
 Decay_rate = 0.96 # The decay rate for decaying the learning rate
 Decay_steps = 1000       # decay step for the exponentially decayed learning rate
@@ -254,19 +386,17 @@ beta1 = 0.9     # beta 1 for adam
 beta2 = 0.9999  # beta 2 for adam
 epsilon = 1e-7  # epsilon for adam
 
-#### Model compile related properties
-batch_size = 9
-loss = cross      # Cost(loss) function : cross entropy(cross)
+[train_set]
+BufferSize = 9
+Type = file
+path = "trainingSet.dat"
 
-####  Model run related properties
-Epochs = 20     # Epochs
-save_path = "model.bin"   # model path to save and read parameters
+[valid_set]
+BufferSize = 9
+Type = file
+path = "valSet.dat"
 
-[DataSet] # Special section that describes dataset
-BufferSize=9
-TrainData="trainingSet.dat"
-ValidData="validationSet.dat"
-LabelData="label.dat"
+# Add [test_set] section if applicable
 
 # Layer Sections, each section name refers to name of the layer
 [inputlayer]
@@ -283,6 +413,9 @@ Activation = sigmoid  # activation : sigmoid, softmax
 weight_regularizer = l2norm
 weight_regularizer_constant = 0.005
 input_layers = inputlayer
+
+[loss]
+Type = cross # Define loss as a layer
 ```
 
 The following restrictions must be adhered to:
